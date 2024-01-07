@@ -3,21 +3,26 @@
 const board = document.getElementById("game-board");
 const instruction = document.getElementById("insrtuction-text");
 const logo = document.getElementById("logo");
+const score = document.getElementById("score");
+const highScoreText = document.getElementById("highScore");
 //Define game variables
 
 const gridSize = 20;
 let snake = [{ x: 10, y: 10 }]; //setting/initiliazing  the snake to the center
 let food = generateFood();
+let highScore = 0;
 let direction = "right";
 let gameInterval;
 let gameSpeedDelay = 200;
 let gameStarted = false;
+
 //draw game map, snake, food
 
 function draw() {
   board.innerHTML = "";
   drawSnake();
   drawFood();
+  updateScore();
 }
 
 //Draw Snake
@@ -52,10 +57,13 @@ function setPosition(element, position) {
 //draw();
 
 function drawFood() {
-  const foodElement = createGameElement("div", "food");
-  setPosition(foodElement, food);
-  //appending the acutal food to the board
-  board.appendChild(foodElement);
+  //if there's no food on the board, then we generate one
+  if (gameStarted) {
+    const foodElement = createGameElement("div", "food");
+    setPosition(foodElement, food);
+    //appending the acutal food to the board
+    board.appendChild(foodElement);
+  }
 }
 function generateFood() {
   //generates random number from 0-1 eg:0.321,0.4,0.99999
@@ -93,6 +101,7 @@ function move() {
     clearInterval(gameInterval); //clear past interval
     gameInterval = setInterval(() => {
       move();
+      checkCollision();
       draw();
     }, gameSpeedDelay);
   } else {
@@ -114,6 +123,7 @@ function startGame() {
   logo.style.display = "none";
   gameInterval = setInterval(() => {
     move();
+    checkCollision();
     draw();
   }, gameSpeedDelay);
 }
@@ -155,4 +165,47 @@ function increaseSpeed() {
   } else if (gameSpeedDelay > 25) {
     gameSpeedDelay -= 1;
   }
+}
+
+function checkCollision() {
+  const head = snake[0];
+  if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
+    resetGame();
+  }
+  //
+  for (let i = 1; i < snake.length; i++) {
+    if (head.x === snake[i].x && head.y === snake[i].y) {
+      resetGame();
+    }
+  }
+}
+
+function resetGame() {
+  updateHighScore();
+  stopGame();
+  snake = [{ x: 10, y: 10 }];
+  food = generateFood();
+  direction = "right";
+  gameSpeedDelay = 200;
+  updateScore();
+}
+
+function updateScore() {
+  const currentScore = snake.length - 1;
+  score.textContent = currentScore.toString().padStart(3, "0");
+}
+function stopGame() {
+  clearInterval(gameInterval);
+  gameStarted = false;
+  instruction.style.display = "block";
+  logo.style.display = "block";
+}
+
+function updateHighScore() {
+  const currentScore = snake.length - 1;
+  if (currentScore > highScore) {
+    highScore = currentScore;
+    (highScoreText.textContent = highScore.toString()).padStart(3, "0");
+  }
+  highScoreText.style.display = "block";
 }
