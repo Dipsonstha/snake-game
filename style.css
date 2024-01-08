@@ -79,3 +79,7 @@ body, .snake{
 #logo{
     position: absolute;
 }
+.head{
+    background-color: red;
+    color: white;
+}

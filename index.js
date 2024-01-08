@@ -15,6 +15,7 @@ let direction = "right";
 let gameInterval;
 let gameSpeedDelay = 200;
 let gameStarted = false;
+let isPaused = false;
 
 //draw game map, snake, food
 
@@ -28,9 +29,13 @@ function draw() {
 //Draw Snake
 function drawSnake() {
   //segment is { x: 10, y: 10 }
-  snake.forEach((segment) => {
+  snake.forEach((segment, index) => {
     //createGameElement()is responsible to create snakeElement and giving it snake class
     const snakeElement = createGameElement("div", "snake");
+    // Add a special style to the head
+    if (index === 0) {
+      snakeElement.classList.add("head");
+    }
     setPosition(snakeElement, segment);
     board.appendChild(snakeElement);
   });
@@ -122,9 +127,11 @@ function startGame() {
   instruction.style.display = "none";
   logo.style.display = "none";
   gameInterval = setInterval(() => {
-    move();
-    checkCollision();
-    draw();
+    if (!isPaused) {
+      move();
+      checkCollision();
+      draw();
+    }
   }, gameSpeedDelay);
 }
 
@@ -135,6 +142,12 @@ function handelKeyPress(event) {
     (!gameStarted && event.key === " ")
   ) {
     startGame();
+  } else if (event.key === "p") {
+    if (isPaused) {
+      resumeGame();
+    } else {
+      pauseGame();
+    }
   } else {
     switch (event.key) {
       case "ArrowUp":
@@ -208,4 +221,19 @@ function updateHighScore() {
     (highScoreText.textContent = highScore.toString()).padStart(3, "0");
   }
   highScoreText.style.display = "block";
+}
+
+function pauseGame() {
+  isPaused = true;
+}
+function resumeGame() {
+  isPaused = false;
+  clearInterval(gameInterval);
+  gameInterval = setInterval(() => {
+    if (!isPaused) {
+      move();
+      checkCollision();
+      draw();
+    }
+  }, gameSpeedDelay);
 }
